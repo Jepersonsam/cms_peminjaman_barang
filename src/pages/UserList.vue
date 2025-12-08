@@ -132,9 +132,7 @@
                 </td>
                 <td class="px-4 py-3">
                   <div class="text-sm text-gray-900">{{ user.email }}</div>
-                  <div class="text-sm text-gray-500">
-                    {{ isVerified(user) ? 'Verified' : 'Unverified' }}
-                  </div>
+
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-900">
                   {{ user.phone || 'N/A' }}
@@ -238,6 +236,7 @@
 import { onMounted, ref, computed } from 'vue'
 import axios from '../services/api'
 import { useUserStore } from '../stores/UserStore'
+import Swal from 'sweetalert2'
 
 const userStore = useUserStore()
 const hasPermission = (perm) => userStore.permissions.includes(perm)
@@ -317,20 +316,46 @@ const getUsers = async () => {
     users.value = res.data.data
   } catch (error) {
     console.error('Error loading users:', error)
-    alert('Gagal memuat data user. Silakan coba lagi.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal memuat data user',
+      text: 'Silakan coba lagi.',
+    })
   }
 }
 
 const deleteUser = async (id) => {
-  if (confirm('Yakin ingin menghapus user ini?')) {
-    try {
-      await axios.delete(`/users/${id}`)
-      getUsers() // Refresh data
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      alert('Gagal menghapus user. Silakan coba lagi.')
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'User ini akan dihapus permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/users/${id}`)
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'User berhasil dihapus.',
+          timer: 1500,
+          showConfirmButton: false
+        })
+        getUsers()
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'User gagal dihapus. Silakan coba lagi.',
+        })
+      }
     }
-  }
+  })
 }
 
 const getRoleColor = (roleName) => {

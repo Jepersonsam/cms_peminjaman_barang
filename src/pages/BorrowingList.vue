@@ -7,21 +7,69 @@
           <h1 class="text-3xl font-bold text-gray-900">Manajemen Peminjaman</h1>
           <p class="text-gray-600 mt-1">Kelola data peminjaman barang</p>
         </div>
-        <router-link
-          v-if="hasPermission('create-borrowing')"
-          to="/borrowings/create"
-          class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
-        >
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Tambah Peminjaman
-        </router-link>
+
+        <!-- Kumpulan Tombol di Kanan -->
+        <div class="flex items-center space-x-4">
+          <!-- Tombol Export -->
+          <div ref="exportWrapper" class="relative inline-block text-left">
+            <button
+              @click="showExport = !showExport"
+              class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Export
+              <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+
+            <!-- Dropdown menu -->
+            <div
+              v-if="showExport"
+              class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10"
+            >
+              <button
+                @click="exportPDF"
+                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Export PDF
+              </button>
+              <button
+                @click="exportExcel"
+                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Export Excel
+              </button>
+            </div>
+          </div>
+          <!-- Tombol Tambah Peminjaman -->
+          <router-link
+            v-if="hasPermission('create-borrowing')"
+            to="/borrowings/create"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Tambah Peminjaman
+          </router-link>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -210,9 +258,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
-import axios from "@/services/api"
-import { useUserStore } from "@/stores/UserStore"
+import { ref, computed, onMounted } from 'vue'
+import axios from '@/services/api'
+import { useUserStore } from '@/stores/UserStore'
+import Swal from 'sweetalert2'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import * as XLSX from 'xlsx'
 
 const userStore = useUserStore()
 const hasPermission = (perm) => userStore.permissions.includes(perm)
@@ -220,18 +272,21 @@ const hasPermission = (perm) => userStore.permissions.includes(perm)
 const borrowings = ref([])
 const loading = ref(true)
 const error = ref(null)
-const search = ref("")
-const statusFilter = ref("")
-const approvalFilter = ref("")
+const search = ref('')
+const statusFilter = ref('')
+const approvalFilter = ref('')
+
+const showExport = ref(false)
+const exportWrapper = ref(null)
 
 const fetchBorrowings = async () => {
   loading.value = true
   error.value = null
   try {
-    const res = await axios.get("/borrowings")
+    const res = await axios.get('/borrowings')
     borrowings.value = res.data.data
   } catch (err) {
-    error.value = "Gagal memuat data."
+    error.value = 'Gagal memuat data.'
     console.error(err)
   } finally {
     loading.value = false
@@ -239,49 +294,117 @@ const fetchBorrowings = async () => {
 }
 
 const filteredBorrowings = computed(() => {
-  return borrowings.value.filter(b => {
+  return borrowings.value.filter((b) => {
     const keyword = search.value.toLowerCase()
     const matchKeyword =
-      b.user?.name?.toLowerCase().includes(keyword) ||
-      b.item?.name?.toLowerCase().includes(keyword)
+      b.user?.name?.toLowerCase().includes(keyword) || b.item?.name?.toLowerCase().includes(keyword)
 
     const matchStatus =
-      statusFilter.value === "" ||
-      (statusFilter.value === "borrowed" && !b.is_returned) ||
-      (statusFilter.value === "returned" && b.is_returned)
+      statusFilter.value === '' ||
+      (statusFilter.value === 'borrowed' && !b.is_returned) ||
+      (statusFilter.value === 'returned' && b.is_returned)
 
-    const matchApproval =
-      approvalFilter.value === "" ||
-      b.approval_status === approvalFilter.value
+    const matchApproval = approvalFilter.value === '' || b.approval_status === approvalFilter.value
 
     return matchKeyword && matchStatus && matchApproval
   })
 })
 
-const formatDate = (dateStr) => (dateStr ? dateStr.slice(0, 10) : "-")
-
+const formatDate = (dateStr) => (dateStr ? dateStr.slice(0, 10) : '-')
 
 const markReturned = async (id) => {
-  if (!confirm("Tandai peminjaman sebagai sudah dikembalikan?")) return
+  if (!confirm('Tandai peminjaman sebagai sudah dikembalikan?')) return
   try {
     await axios.put(`/borrowings/${id}`, { is_returned: true })
     await fetchBorrowings()
-    alert("Barang berhasil ditandai sebagai dikembalikan.")
+    alert('Barang berhasil ditandai sebagai dikembalikan.')
   } catch (err) {
     console.error(err)
-    alert("Gagal mengembalikan barang.")
+    alert('Gagal mengembalikan barang.')
+  }
+}
+
+const exportPDF = () => {
+  const doc = new jsPDF()
+  doc.text('Daftar Peminjaman', 14, 15)
+  autoTable(doc, {
+    head: [['#', 'Peminjam', 'Barang', 'Tgl Pinjam', 'Tgl Kembali', 'Status', 'Persetujuan']],
+    body: filteredBorrowings.value.map((b, idx) => [
+      idx + 1,
+      b.user?.name || '-',
+      b.item?.name || '-',
+      formatDate(b.borrow_date),
+      formatDate(b.return_date),
+      b.is_returned ? 'Dikembalikan' : 'Dipinjam',
+      b.approval_status || '-',
+    ]),
+    startY: 25,
+  })
+  doc.save('borrowings.pdf')
+  showExport.value = false
+}
+
+const exportExcel = () => {
+  const ws = XLSX.utils.json_to_sheet(
+    filteredBorrowings.value.map((b, idx) => ({
+      No: idx + 1,
+      Peminjam: b.user?.name || '-',
+      Barang: b.item?.name || '-',
+      'Tgl Pinjam': formatDate(b.borrow_date),
+      'Tgl Kembali': formatDate(b.return_date),
+      Status: b.is_returned ? 'Dikembalikan' : 'Dipinjam',
+      Persetujuan: b.approval_status || '-',
+    })),
+  )
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Peminjaman')
+  XLSX.writeFile(wb, 'borrowings.xlsx')
+  showExport.value = false
+}
+
+const onClickOutside = (e) => {
+  if (exportWrapper.value && !exportWrapper.value.contains(e.target)) {
+    showExport.value = false
   }
 }
 
 const remove = async (id) => {
-  if (!confirm("Yakin ingin menghapus peminjaman ini?")) return
-  try {
-    await axios.delete(`/borrowings/${id}`)
-    borrowings.value = borrowings.value.filter(b => b.id !== id)
-  } catch (err) {
-    alert("Gagal menghapus peminjaman.")
-    console.error(err)
-  }
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'Peminjaman ini akan dihapus permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/borrowings/${id}`)
+        borrowings.value = borrowings.value.filter((b) => b.id !== id)
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Peminjaman berhasil dihapus.',
+          timer: 1500,
+          showConfirmButton: false,
+        })
+      } catch (err) {
+        console.error('Error deleting borrowing:', err)
+
+        const errorMessage =
+          err.response?.data?.message || 'Gagal menghapus peminjaman. Silakan coba lagi.'
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: errorMessage,
+        })
+      }
+    }
+  })
 }
 
 onMounted(fetchBorrowings)

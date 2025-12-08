@@ -4,9 +4,9 @@
       <!-- Header -->
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-900">
-          {{ isEdit ? 'Edit Peminjaman Mingguan' : 'Tambah Peminjaman Mingguan' }}
+          {{ isEdit ? 'Edit Meeting Schedule' : 'Tambah Meeting Schedule' }}
         </h2>
-        <p class="text-gray-600 mt-1">Isi detail peminjaman sesuai jadwal mingguan</p>
+        <p class="text-gray-600 mt-1">Isi detail meeting schedule</p>
       </div>
 
       <!-- Form -->
@@ -132,7 +132,7 @@
         <!-- Tombol -->
         <div class="flex justify-end space-x-4 mt-6">
           <router-link
-            to="/weekly-room-loans"
+            to="/meeting-schedules"
             class="px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-700"
           >
             Batal
@@ -180,7 +180,7 @@ const getRooms = async () => {
 }
 
 const getLoan = async (id) => {
-  const res = await axios.get(`/weekly-room-loans/${id}`)
+  const res = await axios.get(`/meeting-schedules/${id}`)
   form.value = { ...res.data }
 }
 
@@ -192,14 +192,14 @@ const submitForm = async () => {
     }
 
     if (isEdit.value) {
-      await axios.put(`/weekly-room-loans/${route.params.id}`, payload)
-      alert('Peminjaman berhasil diperbarui!')
+      await axios.put(`/meeting-schedules/${route.params.id}`, payload)
+      alert('Meeting schedule berhasil diperbarui!')
     } else {
-      await axios.post('/weekly-room-loans', payload)
-      alert('Peminjaman berhasil ditambahkan!')
+      await axios.post('/meeting-schedules', payload)
+      alert('Meeting schedule berhasil ditambahkan!')
     }
 
-    router.push('/weekly-room-loans')
+    router.push('/meeting-schedules')
   } catch (error) {
     alert('Gagal menyimpan data.')
     console.error(error)
@@ -214,3 +214,4 @@ onMounted(() => {
   }
 })
 </script>
+

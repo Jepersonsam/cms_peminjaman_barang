@@ -224,6 +224,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from '../services/api'
 import { useUserStore } from '../stores/UserStore'
+import Swal from 'sweetalert2'
 
 const userStore = useUserStore()
 const hasPermission = (perm) => userStore.permissions.includes(perm)
@@ -287,14 +288,42 @@ const markCancelled = async (id) => {
 }
 
 const remove = async (id) => {
-  if (!confirm('Yakin ingin menghapus peminjaman ruangan ini?')) return
-  try {
-    await axios.delete(`/room-loans/${id}`)
-    loans.value = loans.value.filter((l) => l.id !== id)
-  } catch (err) {
-    alert('Gagal menghapus peminjaman.')
-    console.error(err)
-  }
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'Peminjaman ruangan ini akan dihapus permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/room-loans/${id}`)
+        loans.value = loans.value.filter((l) => l.id !== id)
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Peminjaman ruangan berhasil dihapus.',
+          timer: 1500,
+          showConfirmButton: false,
+        })
+      } catch (err) {
+        console.error(err)
+
+        const errorMessage =
+          err.response?.data?.message || 'Gagal menghapus peminjaman. Silakan coba lagi.'
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: errorMessage,
+        })
+      }
+    }
+  })
 }
 
 onMounted(fetchLoans)

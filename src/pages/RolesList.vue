@@ -213,16 +213,43 @@ const saveRole = async () => {
 }
 
 const deleteRole = async (id) => {
-  if (confirm('Yakin ingin menghapus role ini?')) {
-    try {
-      await axios.delete(`/roles/${id}`)
-      fetchRoles()
-      alert('Role berhasil dihapus!')
-    } catch (err) {
-      console.error('Error deleting role:', err)
-      alert('Gagal menghapus role.')
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'Role ini akan dihapus permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/roles/${id}`)
+        fetchRoles()
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Role berhasil dihapus.',
+          timer: 1500,
+          showConfirmButton: false,
+        })
+      } catch (err) {
+        console.error('Error deleting role:', err)
+
+        // Cek error dari Laravel (misalnya foreign key constraint)
+        const errorMessage =
+          err.response?.data?.message ||
+          'Role gagal dihapus. Silakan coba lagi.'
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: errorMessage,
+        })
+      }
     }
-  }
+  })
 }
 
 onMounted(() => {

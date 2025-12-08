@@ -13,12 +13,17 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
     "axios": "^1.11.0",
+    "chart.js": "^4.5.1",
+    "file-saver": "^2.0.5",
+    "jspdf-autotable": "^5.0.2",
     "lucide-vue-next": "^0.534.0",
     "pinia": "^3.0.3",
     "sweetalert2": "^11.22.2",
     "tailwindcss": "^4.1.10",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^4.5.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",

@@ -33,6 +33,19 @@
       </div>
 
       <div class="mb-4">
+        <label class="block font-medium mb-1 text-gray-700">Kategori</label>
+        <select
+          v-model="form.category_id"
+          class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2"
+        >
+          <option :value="null">Pilih Kategori</option>
+          <option v-for="category in categories" :key="category.id" :value="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-4">
         <label class="block font-medium mb-1 text-gray-700">Status Ketersediaan</label>
         <select
           v-model="form.is_available"
@@ -94,9 +107,11 @@ const route = useRoute()
 const router = useRouter()
 const isEdit = computed(() => !!route.params.id)
 
+const categories = ref([])
 const form = ref({
   name: '',
   serial_code: '',
+  category_id: null,
   is_available: true,
   is_active: true,
   is_approval: false, // ✅ Default: Tidak perlu persetujuan
@@ -108,24 +123,54 @@ const generateSerialCode = () => {
   form.value.serial_code = `${prefix}${randomNumber}`
 }
 
+const getCategories = async () => {
+  try {
+    const res = await axios.get('/categories')
+    categories.value = res.data.data || res.data || []
+  } catch (error) {
+    console.error('Gagal memuat kategori:', error)
+  }
+}
+
 const getItem = async () => {
   const { data } = await axios.get(`/items/${route.params.id}`)
-  form.value = data.data
+  const itemData = data.data || data
+  form.value = {
+    name: itemData.name || '',
+    serial_code: itemData.serial_code || '',
+    category_id: itemData.category_id || itemData.category?.id || null,
+    is_available: itemData.is_available ?? true,
+    is_active: itemData.is_active ?? true,
+    is_approval: itemData.is_approval ?? false,
+  }
 }
 
 const handleSubmit = async () => {
-  const url = isEdit.value ? `/items/${route.params.id}` : '/items'
-  const method = isEdit.value ? 'put' : 'post'
-  await axios({ method, url, data: form.value })
-  router.push('/items')
+  try {
+    const url = isEdit.value ? `/items/${route.params.id}` : '/items'
+    const method = isEdit.value ? 'put' : 'post'
+
+    // Prepare payload - include category_id (can be null)
+    const payload = {
+      ...form.value,
+      category_id: form.value.category_id || null,
+    }
+
+    await axios({ method, url, data: payload })
+    router.push('/items')
+  } catch (error) {
+    console.error('Error saving item:', error)
+    alert(error.response?.data?.message || 'Gagal menyimpan item. Silakan coba lagi.')
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await getCategories()
   if (isEdit.value) {
-    getItem()
+    await getItem()
   } else {
     // Generate serial code hanya saat tambah
-    form.value.serial_code = generateSerialCode()
+    generateSerialCode()
   }
 })
 </script>

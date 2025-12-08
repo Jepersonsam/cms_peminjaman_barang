@@ -2,7 +2,9 @@
   <div class="min-h-screen bg-gray-50 p-6">
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
-      <div class="bg-white rounded-lg shadow-sm border p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div
+        class="bg-white rounded-lg shadow-sm border p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      >
         <div>
           <h1 class="text-3xl font-bold text-gray-900">Manajemen Permission</h1>
           <p class="text-gray-600 mt-1">Kelola permission untuk hak akses pengguna</p>
@@ -13,14 +15,22 @@
           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Tambah Permission
         </button>
       </div>
 
       <!-- Form Tambah/Edit -->
-      <div v-if="formVisible" class="bg-white rounded-xl shadow p-6 my-6 border border-gray-200 max-w-xl">
+      <div
+        v-if="formVisible"
+        class="bg-white rounded-xl shadow p-6 my-6 border border-gray-200 max-w-xl"
+      >
         <h2 class="text-xl font-semibold mb-4 text-sky-700">
           {{ editing ? 'Edit' : 'Tambah' }} Permission
         </h2>
@@ -36,8 +46,18 @@
             />
           </div>
           <div class="flex justify-end gap-3">
-            <button type="button" @click="cancelForm" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">Batal</button>
-            <button type="submit" :disabled="loading" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition disabled:opacity-50">
+            <button
+              type="button"
+              @click="cancelForm"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="loading"
+              class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition disabled:opacity-50"
+            >
               {{ loading ? 'Menyimpan...' : 'Simpan' }}
             </button>
           </div>
@@ -64,21 +84,41 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider">Nama Permission</th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
+                >
+                  ID
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
+                >
+                  Nama Permission
+                </th>
                 <!-- <th v-if="hasPermission('edit-permissions')" class="px-6 py-3 text-right text-xs font-medium text-blue-500 uppercase tracking-wider">Aksi</th> -->
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="(item, index) in filteredPermissions" :key="item.id" class="hover:bg-gray-50 transition-colors duration-150">
+              <tr
+                v-for="(item, index) in filteredPermissions"
+                :key="item.id"
+                class="hover:bg-gray-50 transition-colors duration-150"
+              >
                 <td class="px-6 py-4 text-sm text-gray-900">{{ index + 1 }}</td>
                 <td class="px-6 py-4 text-sm text-gray-900">{{ item.name }}</td>
                 <td class="px-6 py-4 text-right text-sm font-medium">
                   <div class="flex justify-end space-x-2">
-                    <button v-if="hasPermission('edit-permissions')" @click="editPermission(item)" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition">
+                    <button
+                      v-if="hasPermission('edit-permissions')"
+                      @click="editPermission(item)"
+                      class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition"
+                    >
                       Edit
                     </button>
-                    <button v-if="hasPermission('delete-permissions')" @click="deletePermission(item.id)" class="inline-flex items-center px-3 py-1.5 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 transition">
+                    <button
+                      v-if="hasPermission('delete-permissions')"
+                      @click="deletePermission(item.id)"
+                      class="inline-flex items-center px-3 py-1.5 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 transition"
+                    >
                       Hapus
                     </button>
                   </div>
@@ -106,7 +146,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from '@/services/api'
 import { useUserStore } from '../stores/UserStore'
-
+import Swal from 'sweetalert2'
 
 const userStore = useUserStore()
 const hasPermission = (perm) => userStore.permissions.includes(perm)
@@ -169,25 +209,45 @@ const editPermission = (item) => {
 }
 
 const deletePermission = async (id) => {
-  if (confirm('Yakin ingin menghapus permission ini?')) {
-    loading.value = true
-    try {
-      await axios.delete(`/permissions/${id}`)
-      alert('Permission berhasil dihapus.')
-      fetchPermissions()
-    } catch (error) {
-      console.error(error)
-      alert('Gagal menghapus permission.')
-    } finally {
-      loading.value = false
+  Swal.fire({
+    title: 'Apakah Anda yakin?',
+    text: 'Permission ini akan dihapus permanen!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      loading.value = true
+      try {
+        await axios.delete(`/permissions/${id}`)
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Permission berhasil dihapus.',
+          timer: 1500,
+          showConfirmButton: false,
+        })
+        fetchPermissions()
+      } catch (error) {
+        console.error(error)
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: 'Permission gagal dihapus. Silakan coba lagi.',
+        })
+      } finally {
+        loading.value = false
+      }
     }
-  }
+  })
 }
-
 // Filter berdasarkan search
 const filteredPermissions = computed(() => {
   return permissions.value.filter((item) =>
-    item.name.toLowerCase().includes(search.value.toLowerCase())
+    item.name.toLowerCase().includes(search.value.toLowerCase()),
   )
 })
 

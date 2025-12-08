@@ -17,8 +17,10 @@ import RoomLoanList from '../pages/RoomLoanList.vue'
 import RoomLoanForm from '../pages/RoomLoanForm.vue'
 import LocationList from '../pages/LocationList.vue'
 import LocationForm from '../pages/LocationForm.vue'
-import WeeklyRoomLoanList from '../pages/WeeklyRoomLoanList.vue'
-import WeeklyRoomLoanForm from '../pages/WeeklyRoomLoanForm.vue'
+import MeetingScheduleList from '../pages/MeetingScheduleList.vue'
+import MeetingScheduleForm from '../pages/MeetingScheduleForm.vue'
+import CategoryList from '../pages/CategoryList.vue'
+import CategoryForm from '../pages/CategoryForm.vue'
 
 const routes = [
   {
@@ -49,6 +51,36 @@ const routes = [
       },
       { path: 'items/create', component: ItemForm },
       { path: 'items/edit/:id', component: ItemForm },
+
+      // Categories
+      {
+        path: '/categories',
+        name: 'CategoryList',
+        component: CategoryList,
+        meta: {
+          requiresAuth: true,
+          requiredPermission: 'view-items',
+        },
+      },
+      {
+        path: '/categories/create',
+        name: 'CategoryCreate',
+        component: CategoryForm,
+        meta: {
+          requiresAuth: true,
+          requiredPermission: 'create-items',
+        },
+      },
+      {
+        path: '/categories/:id/edit',
+        name: 'CategoryEdit',
+        component: CategoryForm,
+        props: true,
+        meta: {
+          requiresAuth: true,
+          requiredPermission: 'edit-items',
+        },
+      },
 
       // Borrowings
       {
@@ -151,34 +183,34 @@ const routes = [
         },
       },
       {
-        path: '/weekly-room-loans',
-        name: 'WeeklyRoomLoanList',
-        component: WeeklyRoomLoanList,
+        path: '/meeting-schedules',
+        name: 'MeetingScheduleList',
+        component: MeetingScheduleList,
         props: true,
-        meta: { 
+        meta: {
           requiresAuth: true,
-          requiredPermission: 'view-weekly-room-loans',
+          requiredPermission: 'view-meeting-schedules',
         },
       },
       {
-        path: '/weekly-room-loans/create',
-        name: 'WeeklyRoomLoanCreate',
-        component: WeeklyRoomLoanForm,
-        meta: { 
+        path: '/meeting-schedules/create',
+        name: 'MeetingScheduleCreate',
+        component: MeetingScheduleForm,
+        meta: {
           props: true,
           requiresAuth: true,
-          requiredPermission: 'create-weekly-room-loans',
+          requiredPermission: 'create-meeting-schedules',
         },
       },
       {
-        path: '/weekly-room-loans/:id/edit',
-        name: 'WeeklyRoomLoanEdit',
-        component: WeeklyRoomLoanForm,
+        path: '/meeting-schedules/:id/edit',
+        name: 'MeetingScheduleEdit',
+        component: MeetingScheduleForm,
         props: true,
-        meta: { 
+        meta: {
           props: true,
-          requiresAuth: true, 
-          requiredPermission: 'edit-weekly-room-loans',
+          requiresAuth: true,
+          requiredPermission: 'edit-meeting-schedules',
         },
       },
       {
