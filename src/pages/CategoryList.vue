@@ -46,14 +46,14 @@
         <div v-if="loading" class="p-6 text-gray-600">Memuat data...</div>
         <div v-else-if="error" class="p-6 text-red-600">{{ error }}</div>
 
-        <div v-else class="overflow-x-auto">
+        <div v-else class="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
                 >
-                  IDgi
+                  ID
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
@@ -229,4 +229,3 @@ const remove = async (id) => {
 
 onMounted(fetchCategories)
 </script>
-

@@ -49,8 +49,8 @@ const routes = [
         component: ItemList,
         meta: { requiresAuth: true, requiredPermission: 'view-items' },
       },
-      { path: 'items/create', component: ItemForm },
-      { path: 'items/edit/:id', component: ItemForm },
+      { path: 'items/create', name: 'ItemCreate', component: ItemForm },
+      { path: 'items/edit/:id', name: 'ItemEdit', component: ItemForm },
 
       // Categories
       {
@@ -107,6 +107,7 @@ const routes = [
       // Roles & Permissions
       {
         path: '/roles',
+        name: 'RolesList',
         component: Roles,
         meta: {
           requiresAuth: true,
@@ -119,6 +120,24 @@ const routes = [
         component: PermissionsList,
         meta: {
           requiredPermission: 'view-permissions',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/permissions/create',
+        name: 'PermissionCreate',
+        component: () => import('../pages/PermissionForm.vue'),
+        meta: {
+          requiredPermission: 'create-permissions',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/permissions/:id/edit',
+        name: 'PermissionEdit',
+        component: () => import('../pages/PermissionForm.vue'),
+        meta: {
+          requiredPermission: 'edit-permissions',
           requiresAuth: true,
         },
       },

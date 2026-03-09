@@ -38,6 +38,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/services/api'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const route = useRoute()
@@ -53,7 +54,11 @@ const getLocation = async () => {
     form.value.name = res.data.data.name || ''
   } catch (error) {
     console.error(error)
-    alert('Gagal memuat data lokasi.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: 'Gagal memuat data lokasi. Silakan coba lagi.',
+    })
   }
 }
 
@@ -70,10 +75,25 @@ const saveLocation = async () => {
     } else {
       await axios.post('/locations', { name: form.value.name })
     }
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: locationId ? 'Lokasi berhasil diperbarui!' : 'Lokasi berhasil ditambahkan!',
+      timer: 1500,
+      showConfirmButton: false,
+    }).then(() => {
     router.push('/locations')
+    })
   } catch (error) {
     console.error(error)
-    alert('Gagal menyimpan lokasi.')
+    const errorMessage =
+      error.response?.data?.message || 'Gagal menyimpan lokasi. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
   }
 }
 </script>

@@ -81,7 +81,7 @@ const form = ref({
   location: '',
   capacity: '',
   description: '',
-  is_active: true
+  is_active: true,
 })
 
 const roomId = route.params.id
@@ -91,11 +91,10 @@ onMounted(async () => {
     const res = await axios.get(`/rooms/${roomId}`)
     form.value = {
       ...res.data.data,
-      is_active: !!res.data.data.is_active
+      is_active: !!res.data.data.is_active,
     }
   }
 })
-
 
 const saveRoom = async () => {
   if (!form.value.name) return

@@ -153,6 +153,7 @@
 import { ref, onMounted } from 'vue'
 import axios from '../services/api'
 import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const route = useRoute()
@@ -193,16 +194,31 @@ const submitForm = async () => {
 
     if (isEdit.value) {
       await axios.put(`/meeting-schedules/${route.params.id}`, payload)
-      alert('Meeting schedule berhasil diperbarui!')
     } else {
       await axios.post('/meeting-schedules', payload)
-      alert('Meeting schedule berhasil ditambahkan!')
     }
 
-    router.push('/meeting-schedules')
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: isEdit.value
+        ? 'Meeting schedule berhasil diperbarui!'
+        : 'Meeting schedule berhasil ditambahkan!',
+      timer: 1500,
+      showConfirmButton: false,
+    }).then(() => {
+      router.push('/meeting-schedules')
+    })
   } catch (error) {
-    alert('Gagal menyimpan data.')
     console.error(error)
+    const errorMessage =
+      error.response?.data?.message || 'Gagal menyimpan data. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
   }
 }
 

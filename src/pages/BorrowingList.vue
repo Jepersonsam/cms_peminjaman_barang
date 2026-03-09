@@ -93,9 +93,9 @@
           class="w-full sm:w-48 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
         >
           <option value="">Semua Persetujuan</option>
-          <option value="pending">Menunggu</option>
-          <option value="approved">Disetujui</option>
-          <option value="rejected">Ditolak</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
         </select>
       </div>
 
@@ -108,9 +108,9 @@
         <div v-if="loading" class="p-6 text-gray-500">Memuat data...</div>
         <div v-else-if="error" class="p-6 text-red-500">{{ error }}</div>
 
-        <div v-else class="overflow-x-auto">
+        <div v-else class="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase">
                   Peminjam
@@ -142,7 +142,12 @@
                 class="hover:bg-gray-50"
               >
                 <td class="px-6 py-4 text-sm text-gray-900">{{ borrowing.user?.name || '-' }}</td>
-                <td class="px-6 py-4 text-sm text-gray-900">{{ borrowing.item?.name || '-' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">
+                  <div class="font-medium">{{ borrowing.item?.name || '-' }}</div>
+                  <div v-if="borrowing.item?.serial_code" class="text-xs text-gray-500 mt-0.5">
+                    {{ borrowing.item.serial_code }}
+                  </div>
+                </td>
                 <td class="px-6 py-4 text-sm text-gray-700">
                   {{ formatDate(borrowing.borrow_date) }}
                 </td>
@@ -199,6 +204,44 @@
                     >
                       Edit
                     </router-link>
+                    <!-- Kirim Notifikasi Pengingat -->
+                    <button
+                      v-if="shouldShowReminderButton(borrowing)"
+                      @click="sendReminder(borrowing.id)"
+                      class="inline-flex items-center px-3 py-1.5 border border-blue-300 shadow-sm text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100"
+                      :disabled="sendingReminder === borrowing.id"
+                    >
+                      <svg
+                        v-if="sendingReminder !== borrowing.id"
+                        class="w-3 h-3 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <svg v-else class="animate-spin w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        />
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        />
+                      </svg>
+                      {{ sendingReminder === borrowing.id ? 'Mengirim...' : 'Kirim Notifikasi' }}
+                    </button>
                     <button
                       v-if="!borrowing.is_returned"
                       @click="markReturned(borrowing.id)"
@@ -278,6 +321,7 @@ const approvalFilter = ref('')
 
 const showExport = ref(false)
 const exportWrapper = ref(null)
+const sendingReminder = ref(null)
 
 const fetchBorrowings = async () => {
   loading.value = true
@@ -294,33 +338,121 @@ const fetchBorrowings = async () => {
 }
 
 const filteredBorrowings = computed(() => {
-  return borrowings.value.filter((b) => {
-    const keyword = search.value.toLowerCase()
-    const matchKeyword =
-      b.user?.name?.toLowerCase().includes(keyword) || b.item?.name?.toLowerCase().includes(keyword)
+  return borrowings.value
+    .filter((b) => {
+      const keyword = search.value.toLowerCase()
+      const matchKeyword =
+        b.user?.name?.toLowerCase().includes(keyword) ||
+        b.item?.name?.toLowerCase().includes(keyword) ||
+        b.item?.serial_code?.toLowerCase().includes(keyword)
 
-    const matchStatus =
-      statusFilter.value === '' ||
-      (statusFilter.value === 'borrowed' && !b.is_returned) ||
-      (statusFilter.value === 'returned' && b.is_returned)
+      const matchStatus =
+        statusFilter.value === '' ||
+        (statusFilter.value === 'borrowed' && !b.is_returned) ||
+        (statusFilter.value === 'returned' && b.is_returned)
 
-    const matchApproval = approvalFilter.value === '' || b.approval_status === approvalFilter.value
+      const matchApproval =
+        approvalFilter.value === '' || b.approval_status === approvalFilter.value
 
-    return matchKeyword && matchStatus && matchApproval
-  })
+      return matchKeyword && matchStatus && matchApproval
+    })
+    .sort((a, b) => b.id - a.id)
 })
 
 const formatDate = (dateStr) => (dateStr ? dateStr.slice(0, 10) : '-')
 
+// Cek apakah button notifikasi harus ditampilkan (1 hari sebelum return_date)
+const shouldShowReminderButton = (borrowing) => {
+  // Hanya tampilkan jika:
+  // 1. Belum dikembalikan
+  // 2. Status approved
+  // 3. 1 hari sebelum atau pada tanggal return_date
+  if (borrowing.is_returned || borrowing.approval_status !== 'approved') {
+    return false
+  }
+
+  if (!borrowing.return_date) {
+    return false
+  }
+
+  const returnDate = new Date(borrowing.return_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  returnDate.setHours(0, 0, 0, 0)
+
+  // Hitung selisih hari
+  const diffTime = returnDate - today
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  // Tampilkan jika 1 hari sebelum atau pada tanggal return_date (diffDays <= 1)
+  return diffDays <= 1 && diffDays >= 0
+}
+
+// Kirim notifikasi pengingat
+const sendReminder = async (id) => {
+  sendingReminder.value = id
+  try {
+    const res = await axios.post(`/borrowings/${id}/send-return-reminder`)
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: res.data.message || 'Notifikasi pengingat berhasil dikirim ke email peminjam.',
+      timer: 2000,
+      showConfirmButton: false,
+    })
+  } catch (err) {
+    console.error('Error sending reminder:', err)
+
+    const errorMessage =
+      err.response?.data?.message || 'Gagal mengirim notifikasi pengingat. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
+  } finally {
+    sendingReminder.value = null
+  }
+}
+
 const markReturned = async (id) => {
-  if (!confirm('Tandai peminjaman sebagai sudah dikembalikan?')) return
+  const result = await Swal.fire({
+    title: 'Konfirmasi Pengembalian',
+    text: 'Tandai peminjaman sebagai sudah dikembalikan?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, tandai dikembalikan',
+    cancelButtonText: 'Batal',
+  })
+
+  if (!result.isConfirmed) return
+
   try {
     await axios.put(`/borrowings/${id}`, { is_returned: true })
     await fetchBorrowings()
-    alert('Barang berhasil ditandai sebagai dikembalikan.')
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: 'Barang berhasil ditandai sebagai dikembalikan.',
+      timer: 2000,
+      showConfirmButton: false,
+    })
   } catch (err) {
-    console.error(err)
-    alert('Gagal mengembalikan barang.')
+    console.error('Error marking as returned:', err)
+
+    const errorMessage =
+      err.response?.data?.message || 'Gagal mengembalikan barang. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
   }
 }
 
@@ -332,7 +464,7 @@ const exportPDF = () => {
     body: filteredBorrowings.value.map((b, idx) => [
       idx + 1,
       b.user?.name || '-',
-      b.item?.name || '-',
+      b.item?.serial_code ? `${b.item?.name || '-'} (${b.item.serial_code})` : b.item?.name || '-',
       formatDate(b.borrow_date),
       formatDate(b.return_date),
       b.is_returned ? 'Dikembalikan' : 'Dipinjam',
@@ -350,6 +482,7 @@ const exportExcel = () => {
       No: idx + 1,
       Peminjam: b.user?.name || '-',
       Barang: b.item?.name || '-',
+      'Kode Barang': b.item?.serial_code || '-',
       'Tgl Pinjam': formatDate(b.borrow_date),
       'Tgl Kembali': formatDate(b.return_date),
       Status: b.is_returned ? 'Dikembalikan' : 'Dipinjam',

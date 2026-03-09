@@ -38,7 +38,7 @@
               class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10"
             >
               <button
-                @click="exportPDF" 
+                @click="exportPDF"
                 class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Export PDF
@@ -125,9 +125,9 @@
           <h3 class="text-lg font-semibold text-gray-900">Daftar Item</h3>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table v-if="filteredItems.length" class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase">ID</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase">
@@ -215,14 +215,14 @@
                 <td v-if="hasPermission('edit-items')" class="px-6 py-4 text-right">
                   <router-link
                     :to="`/items/edit/${item.id}`"
-                    class="text-yellow-700 hover:text-yellow-900 text-sm font-medium mr-4"
+                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition"
                   >
                     Edit
                   </router-link>
                   <button
                     v-if="hasPermission('delete-items')"
                     @click="deleteItem(item.id)"
-                    class="text-red-700 hover:text-red-900 text-sm font-medium"
+                    class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100"
                   >
                     Hapus
                   </button>

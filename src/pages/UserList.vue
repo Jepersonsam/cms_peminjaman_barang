@@ -9,7 +9,7 @@
             <p class="text-gray-600 mt-1">Kelola data pengguna sistem</p>
           </div>
           <router-link
-          v-if="hasPermission('create-users')"
+            v-if="hasPermission('create-users')"
             to="/users/create"
             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200"
           >
@@ -57,9 +57,9 @@
           <h3 class="text-lg font-semibold text-gray-900">Daftar User</h3>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table class="w-full table-fixed divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th
                   class="w-12 px-4 py-2 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
@@ -132,7 +132,6 @@
                 </td>
                 <td class="px-4 py-3">
                   <div class="text-sm text-gray-900">{{ user.email }}</div>
-
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-900">
                   {{ user.phone || 'N/A' }}
@@ -174,13 +173,13 @@
                 <td class="px-4 py-3 text-center">
                   <div class="flex justify-center gap-2">
                     <router-link
-                    v-if="hasPermission('edit-users')"
+                      v-if="hasPermission('edit-users')"
                       :to="`/users/${user.id}/edit`"
                       class="px-3 py-1 text-xs border border-gray-300 rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200"
                       >Edit</router-link
                     >
                     <button
-                    v-if="hasPermission('delete-users')"
+                      v-if="hasPermission('delete-users')"
                       @click="deleteUser(user.id)"
                       class="px-3 py-1 text-xs border border-red-300 rounded-md text-red-600 bg-red-50 hover:bg-red-100"
                     >
@@ -290,8 +289,8 @@ const filteredUsers = computed(() => {
 
     const matchRole =
       !role ||
-      (role === 'super-admin' && hasRole('super-admin')) ||
-      (role === 'admin' && hasRole('admin') && !hasRole('superadmin')) ||
+      (role === 'super-admin' && hasRole('super admin')) ||
+      (role === 'admin' && hasRole('admin') && !hasRole('super admin')) ||
       (role === 'user' &&
         (!user.roles ||
           user.roles.length === 0 ||
@@ -333,7 +332,7 @@ const deleteUser = async (id) => {
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
     confirmButtonText: 'Ya, hapus!',
-    cancelButtonText: 'Batal'
+    cancelButtonText: 'Batal',
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
@@ -343,7 +342,7 @@ const deleteUser = async (id) => {
           title: 'Berhasil!',
           text: 'User berhasil dihapus.',
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         })
         getUsers()
       } catch (error) {
@@ -360,7 +359,7 @@ const deleteUser = async (id) => {
 
 const getRoleColor = (roleName) => {
   const role = roleName.toLowerCase()
-  if (role.includes('admin')) {
+  if (role.includes('super admin') || role.includes('super-admin')) {
     return 'bg-red-100 text-red-800'
   } else if (role.includes('admin')) {
     return 'bg-blue-100 text-blue-800'

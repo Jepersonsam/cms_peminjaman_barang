@@ -239,11 +239,13 @@ const filters = ref({
 })
 
 const filteredLoans = computed(() => {
-  return loans.value.filter((loan) => {
-    const matchName = loan.borrower_name.toLowerCase().includes(filters.value.name.toLowerCase())
-    const matchStatus = filters.value.status ? loan.status === filters.value.status : true
-    return matchName && matchStatus
-  })
+  return loans.value
+    .filter((loan) => {
+      const matchName = loan.borrower_name.toLowerCase().includes(filters.value.name.toLowerCase())
+      const matchStatus = filters.value.status ? loan.status === filters.value.status : true
+      return matchName && matchStatus
+    })
+    .sort((a, b) => b.id - a.id)
 })
 
 const fetchLoans = async () => {
@@ -274,16 +276,39 @@ const statusLabel = (status) => {
 }
 
 const markCancelled = async (id) => {
-  if (!confirm('Batalkan peminjaman ruangan ini?')) return
+  const result = await Swal.fire({
+    title: 'Konfirmasi Pembatalan',
+    text: 'Batalkan peminjaman ruangan ini?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, batalkan',
+    cancelButtonText: 'Batal',
+  })
+
+  if (!result.isConfirmed) return
+
   try {
     const res = await axios.get(`/room-loans/${id}`)
     const loan = res.data
     await axios.put(`/room-loans/${id}`, { ...loan, status: 'cancelled' })
     await fetchLoans()
-    alert('Peminjaman berhasil dibatalkan!')
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: 'Peminjaman berhasil dibatalkan!',
+      timer: 2000,
+      showConfirmButton: false,
+    })
   } catch (err) {
-    alert('Gagal membatalkan peminjaman.')
     console.error(err)
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: 'Gagal membatalkan peminjaman. Silakan coba lagi.',
+    })
   }
 }
 

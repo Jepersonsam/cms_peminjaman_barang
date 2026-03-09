@@ -203,11 +203,13 @@ const filters = ref({
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 
 const filteredLoans = computed(() => {
-  return loans.value.filter((loan) => {
-    const matchName = loan.borrower_name.toLowerCase().includes(filters.value.name.toLowerCase())
-    const matchStatus = filters.value.status ? loan.status === filters.value.status : true
-    return matchName && matchStatus
-  })
+  return loans.value
+    .filter((loan) => {
+      const matchName = loan.borrower_name.toLowerCase().includes(filters.value.name.toLowerCase())
+      const matchStatus = filters.value.status ? loan.status === filters.value.status : true
+      return matchName && matchStatus
+    })
+    .sort((a, b) => b.id - a.id)
 })
 
 const fetchLoans = async () => {

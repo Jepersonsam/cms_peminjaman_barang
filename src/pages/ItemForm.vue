@@ -102,6 +102,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../services/api'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
@@ -157,10 +158,25 @@ const handleSubmit = async () => {
     }
 
     await axios({ method, url, data: payload })
-    router.push('/items')
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: isEdit.value ? 'Item berhasil diperbarui!' : 'Item berhasil ditambahkan!',
+      timer: 1500,
+      showConfirmButton: false,
+    }).then(() => {
+      router.push('/items')
+    })
   } catch (error) {
     console.error('Error saving item:', error)
-    alert(error.response?.data?.message || 'Gagal menyimpan item. Silakan coba lagi.')
+    const errorMessage = error.response?.data?.message || 'Gagal menyimpan item. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
   }
 }
 

@@ -128,6 +128,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../services/api'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
@@ -203,7 +204,11 @@ const loadData = async () => {
     }
   } catch (err) {
     console.error('Gagal load data:', err)
-    alert('Gagal memuat data.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: 'Gagal memuat data. Silakan coba lagi.',
+    })
   } finally {
     loading.value = false
   }
@@ -211,12 +216,20 @@ const loadData = async () => {
 
 const submit = async () => {
   if (!form.value.users_id || !form.value.item_id) {
-    alert('Peminjam dan barang wajib dipilih.')
+    Swal.fire({
+      icon: 'warning',
+      title: 'Perhatian!',
+      text: 'Peminjam dan barang wajib dipilih.',
+    })
     return
   }
 
   if (form.value.return_date < form.value.borrow_date) {
-    alert('Tanggal kembali tidak boleh lebih awal dari tanggal pinjam!')
+    Swal.fire({
+      icon: 'error',
+      title: 'Tanggal Tidak Valid!',
+      text: 'Tanggal kembali tidak boleh lebih awal dari tanggal pinjam!',
+    })
     return
   }
 
@@ -227,11 +240,27 @@ const submit = async () => {
     } else {
       await axios.post('/borrowings', form.value)
     }
-    alert('Data berhasil disimpan!')
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: 'Data berhasil disimpan!',
+      timer: 1500,
+      showConfirmButton: false,
+    }).then(() => {
     router.push('/borrowings')
+    })
   } catch (err) {
     console.error('Gagal simpan:', err)
-    alert('Gagal menyimpan data.')
+
+    const errorMessage =
+      err.response?.data?.message || 'Gagal menyimpan data. Silakan coba lagi.'
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: errorMessage,
+    })
   } finally {
     saving.value = false
   }
