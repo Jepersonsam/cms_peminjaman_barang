@@ -50,6 +50,7 @@
                   Nama Permission
                 </th>
                 <th
+                 v-if="hasPermission('edit-permissions')"
                   class="px-6 py-3 text-right text-xs font-medium text-blue-500 uppercase tracking-wider"
                 >
                   Aksi

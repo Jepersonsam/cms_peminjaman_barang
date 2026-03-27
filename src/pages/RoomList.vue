@@ -81,6 +81,7 @@
                 Status
               </th>
               <th
+               v-if="hasPermission('edit-rooms')"
                 class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase tracking-wider"
               >
                 Aksi

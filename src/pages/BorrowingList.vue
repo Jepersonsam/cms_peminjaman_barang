@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-sm border p-6 mb-6 flex justify-between items-center">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Manajemen Peminjaman</h1>
+          <h1 class="text-3xl font-bold text-gray-900">Manajemen Peminjaman Barang</h1>
           <p class="text-gray-600 mt-1">Kelola data peminjaman barang</p>
         </div>
 

@@ -134,7 +134,7 @@
                   Nama
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase">
-                  Serial
+                  Serial Code
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-blue-500 uppercase">
                   Kategori

@@ -100,6 +100,7 @@
                   Role
                 </th>
                 <th
+                  v-if="hasPermission('edit-users')"
                   class="w-40 px-4 py-2 text-center text-xs font-medium text-blue-500 uppercase tracking-wider"
                 >
                   Aksi

@@ -90,6 +90,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '../services/api'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
@@ -159,9 +160,22 @@ const handleSubmit = async () => {
 
   try {
     await axios({ method, url, data: payload })
+    await Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: isEdit.value ? 'User berhasil diperbarui.' : 'User berhasil ditambahkan.',
+      timer: 2000,
+      showConfirmButton: false,
+    })
     router.push('/users')
   } catch (e) {
     console.error('Gagal menyimpan user:', e)
+    const message = e.response?.data?.message || 'Terjadi kesalahan. Coba lagi.'
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: message,
+    })
   }
 }
 

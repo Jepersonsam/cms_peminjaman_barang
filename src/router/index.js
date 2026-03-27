@@ -307,7 +307,11 @@ router.beforeEach((to, from, next) => {
   const requiredPermission = to.meta.requiredPermission
   if (requiredPermission) {
     const userStore = useUserStore()
-    const hasPermission = userStore.permissions.includes(requiredPermission)
+    
+    // Fallback: Jika butuh 'view-xxx', tapi user punya 'manage xxx', izinkan akses
+    const moduleName = requiredPermission.replace('view-', '')
+    const hasPermission = userStore.permissions.includes(requiredPermission) || 
+                          userStore.permissions.includes(`manage ${moduleName}`)
 
     if (!hasPermission) {
       alert('Anda tidak memiliki izin untuk mengakses halaman ini.')
