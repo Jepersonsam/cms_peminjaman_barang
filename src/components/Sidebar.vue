@@ -85,6 +85,7 @@ import {
   DoorOpen,
   CalendarDays,
   Tag,
+  ScanBarcode,
 } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
 
@@ -130,6 +131,12 @@ const menuGroups = computed(() => [
   {
     title: 'Transactions',
     items: [
+      {
+        label: 'Scan Pengembalian',
+        to: '/scan-return',
+        icon: ScanBarcode,
+        permission: 'manage borrowing',
+      },
       {
         label: 'Peminjaman Barang',
         to: '/borrowings',

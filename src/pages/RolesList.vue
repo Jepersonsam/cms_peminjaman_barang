@@ -78,16 +78,10 @@
               >
                 <td class="px-6 py-4 text-sm text-gray-900">{{ index + 1 }}</td>
                 <td class="px-6 py-4 font-medium text-gray-900">{{ role.name }}</td>
-                <td class="px-6 py-4">
-                  <div class="flex flex-wrap gap-1">
-                    <span
-                      v-for="perm in role.permissions"
-                      :key="perm.id"
-                      class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs"
-                    >
-                      {{ perm.name }}
-                    </span>
-                  </div>
+                <td class="px-6 py-4 text-sm text-gray-900 font-medium">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+                    {{ role.permissions ? role.permissions.length : 0 }} / {{ allPermissions.length }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 text-right">
                   <div class="flex justify-end space-x-2">

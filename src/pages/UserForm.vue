@@ -51,14 +51,20 @@
       <!-- Code -->
       <div class="mb-4">
         <label class="block">Code</label>
-        <input v-model="form.code" type="text" class="w-full border p-2 rounded" />
+        <input 
+          v-model="form.code" 
+          type="text" 
+          class="w-full border p-2 rounded focus:outline-none" 
+          :class="{'border-red-500 ring-1 ring-red-500': codeError}"
+        />
+        <p v-if="codeError" class="text-red-500 text-sm mt-1">{{ codeError }}</p>
       </div>
 
       <!-- Code NFC -->
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <label class="block">Code NFC</label>
         <input v-model="form.code_nfc" type="text" class="w-full border p-2 rounded" />
-      </div>
+      </div> -->
 
       <!-- Role -->
       <div class="mb-4">
@@ -108,6 +114,7 @@ const form = ref({
 })
 
 const allRoles = ref([])
+const allUsers = ref([])
 
 const getRoles = async () => {
   try {
@@ -117,6 +124,24 @@ const getRoles = async () => {
     console.error('Gagal mengambil roles:', error)
   }
 }
+
+const getAllUsers = async () => {
+  try {
+    const res = await axios.get('/users')
+    allUsers.value = res.data.data || []
+  } catch (error) {
+    console.error('Gagal mengambil daftar users:', error)
+  }
+}
+
+const codeError = computed(() => {
+  if (!form.value.code) return ''
+  const currentId = isEdit.value ? Number(route.params.id) : null
+  const isExist = allUsers.value.some(
+    (u) => u.code === form.value.code && u.id !== currentId
+  )
+  return isExist ? 'code sudah terdaftar' : ''
+})
 
 const getUser = async () => {
   try {
@@ -170,7 +195,15 @@ const handleSubmit = async () => {
     router.push('/users')
   } catch (e) {
     console.error('Gagal menyimpan user:', e)
-    const message = e.response?.data?.message || 'Terjadi kesalahan. Coba lagi.'
+    let message = 'Terjadi kesalahan. Coba lagi.'
+    if (e.response?.data?.errors) {
+      const errors = e.response.data.errors
+      const firstErrorKey = Object.keys(errors)[0]
+      message = errors[firstErrorKey][0]
+    } else if (e.response?.data?.message) {
+      message = e.response.data.message
+    }
+    
     Swal.fire({
       icon: 'error',
       title: 'Gagal!',
@@ -181,6 +214,7 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   getRoles()
+  getAllUsers()
   if (isEdit.value) getUser()
 })
 </script>

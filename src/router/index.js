@@ -10,6 +10,7 @@ import BorrowingForm from '../pages/BorrowingForm.vue'
 import BorrowingList from '../pages/BorrowingList.vue'
 import Roles from '../pages/RolesList.vue'
 import PermissionsList from '../pages/PermissionsList.vue'
+import ScanReturn from '../pages/ScanReturn.vue'
 import { useUserStore } from '../stores/UserStore'
 import RoomForm from '../pages/RoomForm.vue'
 import RoomList from '../pages/RoomList.vue'
@@ -102,6 +103,15 @@ const routes = [
         name: 'BorrowingEdit',
         component: BorrowingForm,
         props: true,
+      },
+      {
+        path: '/scan-return',
+        name: 'ScanReturn',
+        component: ScanReturn,
+        meta: {
+          requiresAuth: true,
+          requiredPermission: 'manage borrowing',
+        },
       },
 
       // Roles & Permissions
