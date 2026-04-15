@@ -61,9 +61,12 @@
                     Baru
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">
-                  Oleh: <span class="font-medium text-gray-700">{{ b.user?.name || '-' }}</span>
-                </p>
+                <div class="flex justify-between items-center mt-1 gap-2">
+                  <p class="text-xs text-gray-500">
+                    Oleh: <span class="font-medium text-gray-700">{{ b.user?.name || '-' }}</span>
+                  </p>
+                  <p class="text-[10px] text-gray-400 font-medium whitespace-nowrap">{{ formatTime(b.created_at) }}</p>
+                </div>
               </div>
             </template>
             
@@ -85,9 +88,12 @@
                     Baru
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">
-                  Oleh: <span class="font-medium text-gray-700">{{ r.borrower_name || '-' }}</span>
-                </p>
+                <div class="flex justify-between items-center mt-1 gap-2">
+                  <p class="text-xs text-gray-500">
+                    Oleh: <span class="font-medium text-gray-700">{{ r.borrower_name || '-' }}</span>
+                  </p>
+                  <p class="text-[10px] text-gray-400 font-medium whitespace-nowrap">{{ formatTime(r.created_at) }}</p>
+                </div>
               </div>
             </template>
           </div>
@@ -244,4 +250,10 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   if (fetchInterval) clearInterval(fetchInterval)
 })
+
+const formatTime = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+}
 </script>

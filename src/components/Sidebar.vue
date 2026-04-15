@@ -135,7 +135,7 @@ const menuGroups = computed(() => [
         label: 'Scan Pengembalian',
         to: '/scan-return',
         icon: ScanBarcode,
-        permission: 'manage borrowing',
+        permission: 'scan returns',
       },
       {
         label: 'Peminjaman Barang',

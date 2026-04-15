@@ -110,7 +110,7 @@ const routes = [
         component: ScanReturn,
         meta: {
           requiresAuth: true,
-          requiredPermission: 'manage borrowing',
+          requiredPermission: 'scan returns',
         },
       },
 
